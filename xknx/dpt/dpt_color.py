@@ -87,3 +87,43 @@ class DPTColorXYY(DPTBase):
             )
         except (ValueError, TypeError):
             raise ConversionError(f"Could not serialize {cls.__name__}", value=value)
+
+class DPTColorRGB(DPTBase):
+    """Abstraction for KNX 6 octet color RGB (DPT 242.600)."""
+
+    payload_type = DPTArray
+    payload_length = 3
+
+    @classmethod
+    def to_knx(self, value: Sequence[int]) -> DPTArray:
+        """Convert value to payload."""
+        if not isinstance(value, (list, tuple)):
+            raise ConversionError(
+                "Could not serialize RemoteValueColorRGB (wrong type)",
+                value=value,
+                type=type(value),
+            )
+        if len(value) != 3:
+            raise ConversionError(
+                "Could not serialize DPT 232.600 (wrong length)",
+                value=value,
+                type=type(value),
+            )
+        if (
+            any(not isinstance(color, int) for color in value)
+            or any(color < 0 for color in value)
+            or any(color > 255 for color in value)
+        ):
+            raise ConversionError(
+                "Could not serialize DPT 232.600 (wrong bytes)", value=value
+            )
+
+        return DPTArray(list(value))
+        
+    @classmethod
+    def from_knx(self, payload: DPTArray | DPTBinary) -> tuple[int, int, int]:
+        """Convert current payload to value."""
+        if not (isinstance(payload, DPTArray) and len(payload.value) == 3):
+            raise CouldNotParseTelegram("Payload invalid", payload=str(payload))
+
+        return payload.value[0], payload.value[1], payload.value[2]
