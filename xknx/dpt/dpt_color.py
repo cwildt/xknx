@@ -91,6 +91,7 @@ class DPTColorXYY(DPTBase):
 class DPTColorRGB(DPTBase):
     """Abstraction for KNX 6 octet color RGB (DPT 242.600)."""
 
+    value_type = "ColorRGB"
     payload_type = DPTArray
     payload_length = 3
 
